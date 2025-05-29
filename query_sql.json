@@ -6,7 +6,9 @@
     "dbType": "mysql",
     "taskType": "sql",
     "input":[
-      "select * from  users;"
+      "select * from  users;",
+      "select * from1  users;"
+
     ]
   }
 ]

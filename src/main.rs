@@ -1,7 +1,7 @@
 use std::{fmt, fs};
 use serde::{Deserialize, Deserializer};
 use serde_json::Error;
-use sqlparser::dialect::GenericDialect;
+use sqlparser::dialect::{Dialect, GenericDialect, MySqlDialect, PostgreSqlDialect};
 use sqlparser::parser::Parser;
 
 fn main() {
@@ -13,18 +13,28 @@ fn main() {
     }
     task_vec.iter().for_each(|t| {
         println!("begin task {}", t.task_name);
+        let database_type = &t.db_type;
+        let vec = &t.input;
+        if !parse_sql(database_type, vec) {
+            std::process::exit(1);
+        }
     })
 }
-fn parse_sql(db_type :&String,sql: &String)->bool {
-
-
-    let dialect=GenericDialect{};
-    let result = Parser::parse_sql(&dialect, sql);
-    match result {
-        Ok(statements) => {true}
-        Err(_) => {false}
-    }
-
+fn parse_sql(db_type: &DatabaseType, sql_vec: &Vec<String>) -> bool {
+    let dialect: Box<dyn Dialect> = match db_type {
+        DatabaseType::MySQL => Box::new(MySqlDialect {}),
+        DatabaseType::PostgreSQL => Box::new(PostgreSqlDialect {}),
+        _ => Box::new(GenericDialect {})
+    };
+    sql_vec.iter().all(|sql| {
+        match Parser::parse_sql(&dialect, sql) {
+            Ok(_) => true,
+            Err(e) => {
+                println!("Failed to parse sql {}", sql);
+                false
+            }
+        }
+    })
 }
 fn read_command_file(args: Vec<String>) -> Vec<Task> {
     if args.len() < 2 {
@@ -57,11 +67,11 @@ struct Task {
     #[serde(rename = "taskType")]
     task_type: String,
     #[serde(rename = "dbType")]
-    db_type:DatabaseType,
+    db_type: DatabaseType,
     input: Vec<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
 pub enum DatabaseType {
     MySQL,
     PostgreSQL,
