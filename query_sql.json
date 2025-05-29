@@ -3,6 +3,7 @@
     "taskName": "查询数据并保存",
     "dbUrl": "",
     "output": "{takName}_.txt",
+    "dbType": "mysql",
     "taskType": "sql",
     "input":[
       "select * from  users;"
