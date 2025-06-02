@@ -1,5 +1,5 @@
-use std::fmt;
 use serde::{Deserialize, Deserializer};
+use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
 pub enum DatabaseType {
@@ -10,8 +10,6 @@ pub enum DatabaseType {
     Oracle,
     MariaDB,
 }
-
-
 
 impl<'de> Deserialize<'de> for DatabaseType {
     fn deserialize<D>(deserializer: D) -> Result<DatabaseType, D::Error>
@@ -33,13 +31,17 @@ impl<'de> Deserialize<'de> for DatabaseType {
 
 impl fmt::Display for DatabaseType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", match self {
-            DatabaseType::MySQL => "MySQL",
-            DatabaseType::PostgreSQL => "PostgreSQL",
-            DatabaseType::SQLite => "SQLite",
-            DatabaseType::MSSQL => "MSSQL",
-            DatabaseType::Oracle => "Oracle",
-            DatabaseType::MariaDB => "MariaDB",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                DatabaseType::MySQL => "MySQL",
+                DatabaseType::PostgreSQL => "PostgreSQL",
+                DatabaseType::SQLite => "SQLite",
+                DatabaseType::MSSQL => "MSSQL",
+                DatabaseType::Oracle => "Oracle",
+                DatabaseType::MariaDB => "MariaDB",
+            }
+        )
     }
 }

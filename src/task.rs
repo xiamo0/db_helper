@@ -12,6 +12,4 @@ pub(crate) struct Task {
     //反序列化时忽略
     #[serde(skip_deserializing)]
     pub sql_ves: Vec<String>,
-
 }
-

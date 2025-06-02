@@ -1,9 +1,11 @@
-mod task;
+mod args_util;
 mod database_type;
-mod sql_parser;
+mod sqlx_util;
+mod task;
+mod util;
+
 fn main() {
-    let args = std::env::args().collect::<Vec<String>>();
-    let result = sql_parser::run(&args);
+    let result = util::run();
     match result {
         Ok(_) => {
             println!("Success");
