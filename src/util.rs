@@ -1,4 +1,4 @@
-use crate::{args_util, sqlx_util};
+use crate::{args_util};
 
 pub fn run() -> Result<(), String> {
     let result = args_util::run();
@@ -6,5 +6,6 @@ pub fn run() -> Result<(), String> {
     if result.is_err() {
         return Err(result.err().unwrap().to_string());
     }
-    sqlx_util::run(&result?)
+    Ok(())
+    // sqlx_util::run(&result?)
 }

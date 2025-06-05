@@ -6,15 +6,14 @@ use crate::task::Task;
 use serde_json::Error;
 use sqlparser::dialect::{Dialect, GenericDialect, MySqlDialect, PostgreSqlDialect};
 use sqlparser::parser::Parser;
-use std::collections::HashSet;
 use std::fs;
+use sqlparser::ast::Statement;
 
 pub fn run() -> Result<Vec<Task>, String> {
     let args = std::env::args().collect::<Vec<String>>();
     if args.is_empty() {
         return Err("No arguments supplied".to_string());
     }
-
     if args.is_empty() {
         return Err("No arguments supplied".to_string());
     }
@@ -78,25 +77,40 @@ pub fn parse_sql(db_type: &DatabaseType, sql_vec: &[String]) -> Result<(), Strin
     Ok(())
 }
 
+
+pub fn parse_sql_file_to_vec(file_path: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    // 1. 读取文件内容
+    let sql_content = fs::read_to_string(file_path)?;
+
+    // 2. 使用 GenericDialect 解析（可替换为 MySqlDialect 等）
+    let dialect = GenericDialect {};
+    let statements = Parser::parse_sql(&dialect, &sql_content)?;
+
+    // 3. 将解析后的 AST 转为 SQL 字符串
+    let sql_vec = statements
+        .into_iter()
+        .map(|stmt: Statement| stmt.to_string())
+        .collect::<Vec<_>>();
+
+    Ok(sql_vec)
+}
+
 pub fn get_sql_vec(input: &[String]) -> Vec<String> {
     let mut sql_vec: Vec<String> = Vec::new();
     for x in input {
-        if x.ends_with(".sql") {
-            let result = fs::read_to_string(x);
-            match result {
-                Ok(content) => {
-                    sql_vec.push(content.to_string());
-                }
-                Err(e) => {
-                    println!("reade sql file {},{}", x, e);
-                }
+        if x.to_lowercase().ends_with(".sql") {
+            let result1 = parse_sql_file_to_vec(x);
+            if result1.is_err() {
+                panic!("Error parsing file: {},{}", x, &result1.unwrap_err());
+            } else {
+                let vec = result1.unwrap();
+                sql_vec.extend(vec);
             }
         } else {
             sql_vec.push(x.clone());
         }
     }
-    let set: HashSet<_> = sql_vec.into_iter().collect();
-    set.into_iter().collect()
+    sql_vec
 }
 
 pub fn read_sql_file(task: &[Task]) -> Result<Vec<Task>, String> {
